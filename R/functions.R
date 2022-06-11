@@ -970,7 +970,7 @@ build_winter <- function(precip_iceform, tmp_iceform,
   
   winter_climate_euli %>%
     select_if(.predicate = is.numeric) %>%
-    cor(use = "pairwise.complete.obs") %>%
+    cor(use = "complete.obs") %>%
     corrplot(type = "upper")
   
   dev.off()
@@ -1069,7 +1069,7 @@ build_summer <- function(precip_prestrat, tmp_prestrat,
   
   summer_climate_euli %>%
     select_if(.predicate = is.numeric) %>%
-    cor(use = "pairwise.complete.obs") %>%
+    cor(use = "complete.obs") %>%
     corrplot(type = "upper")
   
   dev.off()
@@ -1177,7 +1177,7 @@ run_and_plot_winter_model <- function(winter_model_data, winter_explanatory,
   
   winter_model_data %>%
     select(where(is.numeric)) %>%
-    cor(use = "pairwise.complete.obs") %>%
+    cor(use = "complete.obs") %>%
     # https://stackoverflow.com/questions/40509217/how-to-have-r-corrplot-title-position-correct
     corrplot(type = "upper", title = "winter data", mar = c(0, 0, 1, 0),
              method = "color", addCoef.col = "grey39",
@@ -1408,7 +1408,7 @@ run_and_plot_summer_model <- function(summer_model_data, summer_explanatory,
   
   summer_model_data %>%
     select(where(is.numeric)) %>%
-    cor(use = "pairwise.complete.obs") %>%
+    cor(use = "complete.obs") %>%
     # https://stackoverflow.com/questions/40509217/how-to-have-r-corrplot-title-position-correct
     corrplot(type = "upper", title = "summer data", mar = c(0, 0, 1, 0),
              method = "color", addCoef.col = "grey39",
@@ -1894,48 +1894,6 @@ run_summer_tree <- function(summer_model_data, summer_explanatory){
   
 }
 
-
-# 2.3 Run linear models ---------------------------------------------------
-
-# Winter season linear model
-run_winter_lm <- function(winter_model_data){
-  
-  ## Fit linear model
-  winterNA <- winter_model_data %>%
-    filter(!is.na(TP_log10)) %>%
-    filter(!is.na(TN_log10)) %>%
-    filter(!is.na(avechla_log10))
-  
-  ## Fit linear model with interactions
-  # (Setting seed using a randomly generated integer)
-  set.seed(3289)
-  m1 <-  lm(avechla_log10 ~ (TP_log10 + TN_log10) *  underice_mean_precip,
-            data = winterNA)
-  
-  return(list(model = m1,
-              winterNA = winterNA))
-  
-}
-
-# Summer season linear model
-run_summer_lm <- function(summer_model_data){
-  
-  ## Fit linear model
-  summerNA <- summer_model_data %>% 
-    filter(!is.na(watertemp)) %>%
-    filter(!is.na(TP_log10)) %>%
-    filter(!is.na(TN_log10))
-  
-  ## Fit linear model with interactions
-  # (Setting seed using a randomly generated integer)
-  set.seed(3289)
-  m1 <- lm(avechla_log10 ~ (TP_log10 + TN_log10) * (watertemp + scale(strat_mean_slp)),
-           data = summerNA)
-  
-  return(list(model = m1,
-              summerNA = summerNA))
-  
-}
 
 # A function to build a summary table for the manuscript
 build_summary_table <- function(euli_filtered, winter_model_data, summer_model_data){

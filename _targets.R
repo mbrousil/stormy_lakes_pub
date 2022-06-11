@@ -225,11 +225,6 @@ list(
                                        winter_explanatory = winter_explanatory),
              packages = c("tidyverse", "future", "lubridate", "rpart")),
   
-  # Winter linear model
-  tar_target(winter_lm,
-             command = run_winter_lm(winter_model_data = modeling_datasets$winter_model_data),
-             packages = c("tidyverse", "future", "lmerTest", "mgcv", "car")),
-  
   # Summer random forest
   tar_target(summer_rf,
              command = run_and_plot_summer_model(summer_model_data = modeling_datasets$summer_model_data,
@@ -246,11 +241,6 @@ list(
                                        summer_explanatory = summer_explanatory),
              packages = c("tidyverse", "future", "lubridate", "rpart")),
   
-  # Summer linear model
-  tar_target(summer_lm,
-             command = run_summer_lm(summer_model_data = modeling_datasets$summer_model_data),
-             packages = c("tidyverse", "future", "lmerTest", "mgcv", "car")),
-  
   # Create and export a map figure of data locations
   tar_target(map_figure,
              command = create_map(winter_model_data = modeling_datasets$winter_model_data,
@@ -260,26 +250,6 @@ list(
              packages = c("tidyverse", "furrr", "future", "lubridate",
                           "rgdal", "zoo", "viridisLite", "ggrepel", "sf",
                           "cowplot")),
-  
-  # Summary stats for linear models
-  tar_target(lm_stats_out,
-             command = {
-               winterStat <- broom::tidy(winter_lm$model)
-               summerStat <- broom::tidy(summer_lm$model)
-               
-               outStats <- rbind(winterStat, summerStat) %>%
-                 data.frame()
-               
-               outStats[, "model"] <- c(rep("winter", nrow(winterStat)),
-                                        rep("summer", nrow(summerStat)))
-               
-               write_csv(x = outStats, file = "data/outputs/StatsOut.csv")
-               
-               return(list(lm_stats_table = outStats,
-                           lm_stats_out_path = "data/outputs/StatsOut.csv"))
-               
-             }
-  ),
   
   # Summary table for lakes
   tar_target(summary_table,
@@ -343,11 +313,7 @@ list(
   
   # Map figure
   tar_file(name = map_figure_file,
-           command = map_figure),
-  
-  # Linear model summary stats
-  tar_file(name = lm_stats_file,
-           command = lm_stats_out$lm_stats_out_path)
+           command = map_figure)
 )
 
 
